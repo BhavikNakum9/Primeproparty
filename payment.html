@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prime Payment</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/payment.css">
+</head>
+
+<body>
+  <header>
+    <div class="container navbar">
+      <a href="newindex.html" class="logo">PRIME</a>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button onclick="toggleDarkMode()"
+          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-color);"
+          title="Toggle Dark Mode"><i class="fas fa-moon" id="dark-icon"></i></button>
+        <a href="newindex.html" class="btn btn-outline">Back</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="container" style="padding-top:2rem;padding-bottom:3rem;">
+    <h2 class="section-title">Secure Checkout</h2>
+    <div class="payment-stepper" id="payment-stepper">
+      <div class="pay-step active" id="step-summary"><span>1</span>Cart</div>
+      <div class="pay-step" id="step-method"><span>2</span>Method</div>
+      <div class="pay-step" id="step-details"><span>3</span>Details</div>
+      <div class="pay-step" id="step-confirm"><span>4</span>Confirm</div>
+      <div class="pay-step" id="step-done"><span>5</span>Done</div>
+    </div>
+
+    <div class="checkout-process-container" style="position: relative; min-height: 400px; margin-top:2rem;">
+
+      <!-- STEP 1: SUMMARY / CART -->
+      <div id="section-summary" class="checkout-section active-section">
+        <h3>Step 1: Booking Cart</h3>
+        <div class="payment-summary" id="payment-summary" style="margin-bottom:2rem;"></div>
+        <div style="text-align:right;">
+          <button class="btn btn-primary" onclick="proceedToMethod()">Proceed to Payment Method <i
+              class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- STEP 2: METHOD -->
+      <div id="section-method" class="checkout-section" style="display:none;">
+        <h3>Step 2: Select Method</h3>
+        <div class="payment-methods" style="margin-bottom:2rem;">
+          <button type="button" class="payment-method-card active" onclick="setMethod('CARD', this)">Card</button>
+          <button type="button" class="payment-method-card" onclick="setMethod('UPI', this)">UPI</button>
+          <button type="button" class="payment-method-card" onclick="setMethod('BANK', this)">Net Banking</button>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <button class="btn btn-outline" onclick="goBackToSummary()"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="btn btn-primary" onclick="proceedToDetails()">Next: Payer Details <i
+              class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- STEP 3 & 4: DETAILS & CONFIRM -->
+      <div id="section-details" class="checkout-section" style="display:none;">
+        <h3>Step 3: Payer & Method Details</h3>
+        <form id="payment-form" onsubmit="confirmPayment(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input id="payer-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input id="payer-email" type="email" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input id="payer-phone" class="form-control" required>
+          </div>
+
+          <div id="card-fields">
+            <div class="form-group">
+              <label>Card Number</label>
+              <input id="card-number" class="form-control" maxlength="19" placeholder="0000 0000 0000 0000">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="form-group">
+                <label>Expiry (MM/YY)</label>
+                <input id="card-expiry" class="form-control" maxlength="5" placeholder="MM/YY">
+              </div>
+              <div class="form-group">
+                <label>CVV</label>
+                <input id="card-cvv" class="form-control" maxlength="3" placeholder="123">
+              </div>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+              <input type="checkbox" id="save-card-cb" style="width:16px;height:16px;cursor:pointer;">
+              <label for="save-card-cb" style="margin:0;cursor:pointer;font-size:0.9rem;color:var(--text-light);">Securely save card for future purchases</label>
+            </div>
+          </div>
+
+          <div id="upi-fields" style="display:none;">
+            <div style="text-align:center; margin-bottom:1rem;">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=primeproperties@upi" alt="UPI QR"
+                style="border:1px solid #ddd;padding:8px;border-radius:10px;">
+              <p style="font-size:0.85rem;color:#64748b;margin-top:6px;">Scan this QR or enter UPI ID below</p>
+            </div>
+            <div class="form-group">
+              <label>UPI ID</label>
+              <input id="upi-id" class="form-control" placeholder="name@bank">
+            </div>
+          </div>
+
+          <div id="bank-fields" style="display:none;">
+            <div class="form-group">
+              <label>Select Bank</label>
+              <select id="bank-name" class="form-control">
+                <option value="">-- Select Bank --</option>
+                <option value="SBI">State Bank of India</option>
+                <option value="HDFC">HDFC Bank</option>
+                <option value="ICICI">ICICI Bank</option>
+                <option value="AXIS">Axis Bank</option>
+                <option value="KOTAK">Kotak Mahindra Bank</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Account Holder Name</label>
+              <input id="bank-holder" class="form-control" placeholder="Name as per bank account">
+            </div>
+          </div>
+
+          <div id="payment-steps" style="font-size:0.9rem;color:#334155;margin:10px 0 16px;"></div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:2rem;">
+            <button type="button" class="btn btn-outline" onclick="goBackToMethod()"><i class="fas fa-arrow-left"></i>
+              Back</button>
+            <button class="btn btn-primary" id="btn-pay" type="submit">Step 4: Confirm & Pay</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- STEP 5: DONE -->
+      <div id="section-done" class="checkout-section" style="display:none;">
+        <div id="payment-result"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <script src="js/payment.js?v=4"></script>
+</body>
+
+</html>
